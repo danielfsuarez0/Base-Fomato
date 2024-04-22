@@ -1,0 +1,81 @@
+---
+title: 'Reporte '
+author: "Calidad"
+date: "2023-11-16"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+params:
+  variable_df: null
+  variable_grafica1: null
+  grafico_satisfactorias: null
+
+
+---
+<div style="text-align:center;">
+  <img src="LOGO.jpg" alt="Logo de la Empresa" width="200"/>
+</div>
+
+
+# Reporte de pruebas de desempeño
+## F-GC-27 Indicador Pruebas de desempeño
+
+<style>
+body {
+    text-align: justify;
+  }
+</style>
+
+## Introducción
+
+El presente informe detalla el desempeño del laboratorio Biopolab a lo largo del año.La información contenida en este reporte proviene de la aplicación web desarrollada por el área de calidad, que facilita la recopilación y análisis de datos relacionados con las pruebas de desempeño realizadas en el laboratorio. Este análisis se centra en las áreas de microbiología y fisicoquímica, dividiendo las pruebas satisfactorias, insatisfactorias y cuestionables. Además, se proporciona una visión general del progreso logrado, expresado en porcentajes de pruebas presentadas y aquellas que aún están pendientes. 
+
+## Análisis de Pruebas de Desempeño:
+
+### Tabla de Pruebas de Desempeño:
+
+A continuación se presenta una tabla detallada de las pruebas de desempeño realizadas en el laboratorio Biopolab durante el año. Las pruebas se clasifican según su área de aplicación, ya sea microbiología o fisicoquímica.
+
+
+```{r}
+
+print(params$variable_df)
+
+```
+Gráfica General de pruebas de desempeño
+
+
+A continuación, se exhibe un gráfico de barras que ilustra el recuento de pruebas clasificadas según sus resultados: satisfactorio, cuestionable e insatisfactorio. Además de otro gráfico con las pruebas presentadas a lo largo del año. 
+
+```{r}
+print(params$variable_grafica1)
+
+```
+
+
+
+
+
+```{r}
+print(params$variable_grafica_fisico1)
+print(params$variable_grafica_fisico2)
+print(params$variable_grafica_micro1)
+print(params$variable_grafica_micro2)
+```
+
+El análisis de la gráfica de barras revela información sobre el desempeño de las pruebas realizadas. En primer lugar, se observa un número significativo de pruebas con resultados satisfactorios, indicando un nivel alto de efectividad en el proceso evaluativo. Este resultado positivo sugiere que la mayoría de las pruebas están cumpliendo con los criterios establecidos y proporcionando datos concluyentes.
+
+Por otro lado, la presencia de pruebas cuestionables es digna de atención. Este segmento puede indicar áreas de mejora en los procesos de evaluación o en la calidad de las pruebas realizadas. Sería prudente analizar más a fondo las pruebas categorizadas como cuestionables para identificar posibles patrones o tendencias que podrían requerir ajustes.
+
+Por último, la presencia de pruebas con resultados insatisfactorios es una señal clara de áreas críticas que necesitan una revisión inmediata. Este segmento podría ser el punto de partida para investigar y corregir posibles fallos en los procedimientos de prueba o en la calidad de los materiales utilizados.
+
+Asimismo, para obtener una perspectiva temporal, se ha incluido una segunda gráfica que desglosa el número de pruebas presentadas durante el mes de noviembre, clasificadas por sus resultados. Este análisis mensual permite identificar posibles patrones estacionales o fluctuaciones en los resultados de las pruebas. Al observar la distribución a lo largo del año, se puede realizar un seguimiento de la evolución de los resultados, identificando posibles mejoras o áreas de atención específicas en determinados meses. Este enfoque temporal proporciona una visión más completa de la eficacia del proceso de evaluación a lo largo del tiempo, permitiendo una adaptación proactiva y continua para garantizar la calidad de las pruebas en el futuro.
+
+
+
+
+
+
+
+
