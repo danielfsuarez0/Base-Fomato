@@ -16,25 +16,17 @@ library(RMySQL)
 library(shinythemes)
 library(shinyjs) 
 library(htmlwidgets)
+library(lubridate)
+
 
 
 ui <- dashboardPage (
+
   skin = "black",
   dashboardHeader(
     title = span(img(src = "logo.svg", height = 35), "InterLabs"),
     titleWidth = 300,
-    dropdownMenu(
-      type = "notifications", 
-      headerText = strong("HELP"), 
-      icon = icon("question"), 
-      badgeStatus = NULL,
-      notificationItem(
-        text = ("Como usar la app"),
-        icon = icon("spinner")
-        
-      )
 
-    ),
     tags$li(
       a(
         strong("Acerca de la app"),
@@ -78,10 +70,13 @@ ui <- dashboardPage (
   tags$footer("Desarrollado por Daniel F. Suárez", align = "right", style = "bottom:0;color: grey; padding:10px;
                 position:absolute;width:100%;")
   ),
-  dashboardBody(   
+  dashboardBody( 
+    tags$head(tags$style(HTML("body {background-color: #00008B !important;}"))),
     tabItems(
       tabItem(
         tabName = "excel",
+        tags$h1("BIENVENIDO A LABINTERLAB", style = "text-align: center;") %>%
+          tags$p("En primer lugar, primero cargue el formato ", tags$strong("F-GC-27 Indicador de pruebas de desempeño"), " en formato ", tags$strong(".xlsx"), ", a continuación se muestran las tablas que se cargan de las diferentes hojas del excel.|"),
         uiOutput("dropdown_sheets"),
         dataTableOutput("table_data")
         
@@ -89,20 +84,31 @@ ui <- dashboardPage (
       tabItem(
         tabName = "cartaideam",
         fluidRow(
-        column(width = 6,
-               h1("Graficos de control"),  # Título grande
-               p(style = "textalign: justify;", "En esta sección, podrás analizar gráficamente", strong("las tendencias de los resultados de las pruebas de desempeño"), "presentadas por Biopolab a lo largo del tiempo. Este análisis te permitirá visualizar cómo se comportan los resultados de las diferentes técnicas utilizadas por Biopolab,
-                      específicamente en relación con los proveedores."),
-               p(style = "textalign: justify;","Podrás seleccionar un año específico para ver cómo evolucionan los resultados de las pruebas según los proveedores a lo largo de ese período. Esto te proporcionará una visión detallada de las tendencias y patrones que pueden surgir en las pruebas de desempeño en diferentes momentos.Explora las gráficas y descubre valiosas insights sobre el rendimiento de Biopolab a través de los años, analizando cómo se desenvuelven los resultados de las pruebas con cada proveedor en las diversas técnicas aplicadas."),
-               br(),  # Salto de línea
-               hr(),  # Línea horizontal
-               br(),  # Salto de línea
+          column(width = 6, h1(style = "font-weight:bold", "CARTAS CONTROL")),
 
-        ),
-        column(width = 6,
-               uiOutput("dropdowns"),
-               actionButton("update_plot", "Actualizar Gráfico")
-               )),
+          box(title = "Análisis de Z-score", background = "light-blue",
+              fluidRow(
+                column(width = 12, align = "justify",
+                       "A continuación puede encontrar las gráficas discriminadas por proveedor para cada técnica que desee ver. Seleccione del menu los parámetros necesarios para poder
+                       visualizar los gráficos. Allí puede ver y analizar las tendencias, según el Z-score obtenido en las pruebas"
+                )
+              )
+          )),
+          fluidRow(
+            column(width = 6,
+                   uiOutput("dropdowns"),
+                   actionButton("update_plot", "Actualizar Gráfico")
+            ),
+            box(title = "Cartas control", background = "green",
+                fluidRow(
+                column(width = 12, align = "justify",
+                "Las cartas de control son una herramienta invaluable en el análisis de pruebas, ya que permiten observar de manera discriminada los resultados a lo largo del tiempo. Con ellas, podemos estudiar tendencias y desviaciones en los datos obtenidos, lo que nos brinda una visión detallada y precisa del desempeño de las pruebas a lo largo de distintos períodos. 
+                Al utilizar cartas de control, podemos identificar patrones y cambios significativos en los resultados de las pruebas, lo que nos ayuda a comprender mejor cómo se comportan los procesos y a tomar decisiones informadas para mejorar la calidad y consistencia en los resultados."
+                                   )
+                                 )
+          )),
+
+
         fluidRow(
           column(width = 6,
                  plotOutput("zscore_plot")  # Gráfico zscore_plot en una columna
@@ -113,36 +119,72 @@ ui <- dashboardPage (
         )
       ),
       tabItem(tabName = "indicadores", 
+              fluidRow( h1(style = "text-align: center", "INDICADORES DE PRUEBAS DE DESEMPEÑO")
+                
+              ),
+              br(),
+              br(),
+                fluidRow(box(title = "Análisis de Desempeño de Pruebas en el Laboratorio", background = "green",
+                             fluidRow(
+                               column(width = 12, align = "justify",
+                                      "Esta sección proporciona un análisis detallado del desempeño de las pruebas realizadas en el laboratorio, ofreciendo una visión integral de los resultados obtenidos. Las gráficas presentadas resaltan distintas categorías de desempeño, como resultados satisfactorios, insatisfactorios y cuestionables, permitiendo una evaluación exhaustiva de los datos clave de rendimiento."
+                               )
+                             )
+                ),
+                
+                box(title = "Exploración Detallada", background = "green",
+                    fluidRow(
+                      column(width = 12, align = "justify",
+                             "Seleccione la técnica específica que desea analizar por separado a través de los menús desplegables a continuación. Esto le permitirá enfocarse en un aspecto particular del desempeño de las pruebas y obtener una comprensión más profunda de los resultados asociados.",
+                             "Además, puede seleccionar el año de interés para visualizar cómo han evolucionado los resultados a lo largo del tiempo. Esto le brinda la oportunidad de identificar tendencias, patrones y áreas de mejora en función de la cronología de las pruebas realizadas."
+                      )
+                    )
+                ),
+                
+                box(title = "Acceso a Información Histórica", background = "green",
+                    fluidRow(
+                      column(width = 12, align = "justify",
+                             "También se generan gráficas que incluyen la totalidad de las pruebas de desempeño presentadas históricamente por el laboratorio. Esta perspectiva histórica le proporciona una visión general de largo plazo, facilitando la comparación entre diferentes períodos y la evaluación de la progresión del desempeño a lo largo de los años."
+                      )
+                    )
+                ),
+                
+                box(title = "Interacción Intuitiva", background = "green",
+                    fluidRow(
+                      column(width = 12, align = "justify",
+                             "Utilice los menús desplegables a continuación para seleccionar la técnica de interés y el año deseado. Al explorar las gráficas generadas, podrá identificar tendencias, anomalías y áreas de enfoque para mejorar continuamente el desempeño y la calidad de las pruebas en el laboratorio."
+                      )
+                    )
+                )),
+              
+              fluidRow(
               column(width = 6,
                      uiOutput("dropdown_indicadores"),
                      actionButton("update_indicadores_plot", "Actualizar Gráficas")
-              ),
-              column(width = 6,
-                     
-                     actionButton("generate_indicators_btn", "Generar indicadores")
-              ),
+              )),
               fluidRow(
-                column(width = 12,
+                column(width = 6,
                        plotOutput("barras_satisfactorias_insatisfactorias")  # Gráfico de barras de satisfactorias e insatisfactorias
-                )),
-              fluidRow(
-                column(width = 12,
+                ),
+            
+                column(width = 6,
                        plotOutput("barras_proveedor_pruebas")  # Gráfico de barras de proveedores y pruebas
                 ) 
-              
               ),
+           
               fluidRow(
                 column(width = 12,
               plotOutput("barras_totales")
-                ),
-              plotOutput("dona_porcentajes")
+                )
               ),
-              fluidRow(
-                uiOutput("year_selector"),
-                             
-                plotOutput("barras_totales2")
-                
-              )
+              fluidRow(plotOutput("dona_porcentajes")),
+              fluidRow( column(width = 6,
+                               uiOutput("year_selector")
+                               )
+
+              ),
+              fluidRow(column(width = 12,
+                        plotOutput("barras_totales2")))
       )
       
 )
@@ -162,6 +204,10 @@ server <- function(input, output, session) {
       )
     )
   })
+  
+  
+  # PESTAÑA DE IDEAM
+  #-----------------------------------------------------------------------------#
 
   # Leer el archivo Excel y obtener nombres de hojas
   observeEvent(input$file_excel, {
@@ -186,16 +232,27 @@ server <- function(input, output, session) {
   })
   
   
-  # Generate dropdowns based on data
+  # Generar un DROPDOWN por cada hoja en el excel. 
   output$dropdowns <- renderUI({
     req(data())
     dropdowns <- lapply(c("Area", "Matriz", "Prueba", "Proveedor"), function(col) {
       unique_values <- sort(unique(data()[[col]]))
       selectInput(inputId = paste0("dropdown_", col), label = col, choices = c("", unique_values))
     })
-    tagList(dropdowns)
+    tagList(
+      tags$style(HTML("
+      .dropdown-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    ")),
+      div(class = "dropdown-wrapper", dropdowns)
+    )
   })
   
+# IDEAM- CARTAS CONTROL  
+  #------------------------------------------------------------#
   # Filter data based on user selections
   filtered_data <- reactive({
     req(data())
@@ -221,7 +278,7 @@ server <- function(input, output, session) {
     
     ggplot(all_data, aes(x = Fecha_del_informe, y = `z Score`, color = `Prueba`)) +
       geom_point() +
-      geom_line() +
+      geom_smooth(method = "loess", se = FALSE) +  # Suavizado de dispersión
       geom_hline(yintercept = c(-2, 2), linetype = "solid", color = "red") +
       labs(title = "Z-Scores por Proveedor", x = "Fecha del Informe", y = "Z-Score") +  # Etiquetas de los ejes
       theme_minimal() +  # Estilo minimalista
@@ -231,8 +288,7 @@ server <- function(input, output, session) {
         text = element_text(color = "black", size = 10, face = "bold"),  # Texto blanco, tamaño 12, negrita
         plot.title = element_text(hjust = 0.5),  # Centrar título
         axis.title = element_text(hjust = 0.5)  # Centrar etiquetas de los ejes
-      )+
-      
+      ) +
       geom_point(data = all_data[all_data$`z Score` < -2 | all_data$`z Score` > 2, ], aes(shape = "Outside Limits"), size = 4) +
       scale_shape_manual(values = c("Outside Limits" = 1))  # Cambiar la forma de los puntos fuera de los límites
   })
@@ -253,22 +309,23 @@ server <- function(input, output, session) {
     
     ggplot(all_data, aes(x = Fecha_del_informe, y = `z Score`, color = `Proveedor`, group = `Proveedor`)) +
       geom_point(size = 3) +  # Tamaño de los puntos
-      geom_line() +
+      geom_smooth(method = "loess", se = FALSE) +  # Suavizado de dispersión
       geom_hline(yintercept = c(-2, 2), linetype = "solid", color = "red") +
       labs(title = "Z-Scores de Todos los Proveedores", x = "Fecha del Informe", y = "Z-Score") +  # Etiquetas de los ejes
       theme_minimal() +  # Estilo minimalista
       theme(
-        plot.background = element_rect(fill = "#F0F8FF"),  # Fondo negro
-        panel.background = element_rect(fill = "#D3E3D3"),  # Fondo negro para el panel
-        text = element_text(color = "black", size = 10, face = "bold"),  # Texto blanco, tamaño 12, negrita
-        plot.title = element_text(hjust = 0.5),  # Centrar título
-        axis.title = element_text(hjust = 0.5)  # Centrar etiquetas de los ejes
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
       ) +
-      
       geom_point(data = all_data[all_data$`z Score` < -2 | all_data$`z Score` > 2, ], aes(shape = "Outside Limits"), size = 4) +
       scale_shape_manual(values = c("Outside Limits" = 1))  # Cambiar la forma de los puntos fuera de los límites
   })
   
+  # IDEAM - INDICADORES
+  # -----------------------------------------------------------#
   output$dropdown_indicadores <- renderUI({
     req(data())
     dropdowns <- lapply(c("Area", "Matriz", "Prueba"), function(col) {
@@ -296,7 +353,16 @@ server <- function(input, output, session) {
     ggplot(data_indicadores, aes(x = Fecha_del_informe, fill = Resultado_de_la_prueba)) +
       geom_bar(position = "dodge") +
       labs(title = "Resultados de Pruebas: Satisfactorias vs Insatisfactorias", x = "Prueba", y = "Cantidad") +
-      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable"="yellow"))  # Colores para barras
+      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable"="yellow")) + 
+      theme_minimal() +  # Estilo minimalista
+      theme(
+        legend.position = "right",
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
+      )
   })
   
   # Gráfico de barras de proveedores y pruebas
@@ -307,7 +373,16 @@ server <- function(input, output, session) {
     ggplot(data_indicadores, aes(x = Proveedor, fill = Resultado_de_la_prueba)) +
       geom_bar(position = "dodge") +
       labs(title = "Resultados de Pruebas por Proveedor", x = "Proveedor", y = "Cantidad") +
-      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable"="yellow"))  # Colores para barras
+      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable"="yellow"))+
+      theme_minimal() +  # Estilo minimalista
+      theme(
+        legend.position = "right",
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
+      )# Colores para barras
   })
   
   output$barras_totales <- renderPlot({
@@ -322,7 +397,16 @@ server <- function(input, output, session) {
     ggplot(summarised_data, aes(x = Resultado_de_la_prueba, y = Cantidad, fill = Resultado_de_la_prueba)) +
       geom_bar(stat = "identity") +
       labs(title = "Resultados de Pruebas totales", x = "Resultado de la Prueba", y = "Cantidad") +
-      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable" = "yellow"))  # Colores para barras
+      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable" = "yellow"))+
+      theme_minimal() +  # Estilo minimalista
+      theme(
+        legend.position = "right",
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
+      )
   })
   
   calculate_percentages <- function(data) {
@@ -339,9 +423,7 @@ server <- function(input, output, session) {
     )
     percentages
   }
-  
-
-
+ 
   output$dona_porcentajes <- renderPlot({
     req(input$update_indicadores_plot)
     data_total <- data()  # Obtener todos los datos
@@ -358,7 +440,16 @@ server <- function(input, output, session) {
       geom_text(aes(label = paste0(round(percentage, 2), "%")), position = position_stack(vjust = 0.5)) +
       labs(title = "Porcentaje de Resultados de Pruebas totales", fill = "Resultado de la Prueba") +
       theme_void() +
-      theme(legend.position = "right")
+      
+      theme_minimal() +  # Estilo minimalista
+      theme(
+        legend.position = "right",
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
+      )# Colores para barras
   })
   
   output$year_selector <- renderUI({
@@ -370,20 +461,30 @@ server <- function(input, output, session) {
                  selected = NULL)
   })
   
-  
   output$barras_totales2 <- renderPlot({
     req(input$update_indicadores_plot)
     data_total <- data()  # Obtener todos los datos
+
+    data_total$Fecha_del_informe <- as.Date(data_total$Fecha_del_informe, format = "%d/%m/%Y")
     
-    # Filtrar por año si se selecciona uno, de lo contrario, usar todos los años
-    if (!is.null(input$year_selector)) {
-      data_total <- data_total[data_total$Fecha_del_informe == input$year_selector, ]
-    }
+    # Filtrar por año
+    data_filtered <- data_total %>%
+      filter(year(Fecha_del_informe) == as.numeric(input$year_selector))
     
-    ggplot(data_total, aes(x = Fecha_del_informe, fill = Resultado_de_la_prueba)) +
+    
+    ggplot(data_filtered, aes(x = Fecha_del_informe, fill = Resultado_de_la_prueba)) +
       geom_bar(position = "dodge") +
+     
       labs(title = "Resultados de Pruebas totales", x = "Fecha_del_informe", y = "Cantidad") +
-      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable" = "yellow"))  # Colores para barras
+      scale_fill_manual(values = c("Satisfactorio" = "green", "Insatisfactorio" = "red", "Cuestionable" = "yellow"))+
+      theme_minimal() +  # Estilo minimalista
+      theme(
+        plot.background = element_rect(fill = "#F0F8FF"),  
+        panel.background = element_rect(fill = "#D3E3D3"),  
+        text = element_text(color = "black", size = 10, face = "bold"),  
+        plot.title = element_text(hjust = 0.5),  
+        axis.title = element_text(hjust = 0.5)  
+      )# Colores para barras
   })
   
 }
