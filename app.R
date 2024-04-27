@@ -17,7 +17,7 @@ library(shinythemes)
 library(shinyjs) 
 library(htmlwidgets)
 library(lubridate)
-library(shinydashboardPlus)
+
 
 
 
@@ -26,7 +26,7 @@ ui <- dashboardPage (
   
   skin = "black",
   dashboardHeader(
-    title = span(img(src = "logo.svg", height = 35), "InterLabs"),
+    title = span(img(src = "logo.png", height = 35), "InterLabs"),
     titleWidth = 300,
 
     tags$li(
@@ -82,7 +82,7 @@ ui <- dashboardPage (
     tabItems(
       tabItem(
         tabName = "excel",
-        tags$h1("BIENVENIDO A LABINTERLAB", style = "text-align: center;") %>%
+        tags$h1("DATOS CARGADOS", style = "text-align: center;") %>%
           tags$p("En primer lugar, primero cargue el formato ", tags$strong("F-GC-27 Indicador de pruebas de desempeño"), " en formato ", tags$strong(".xlsx"), ", a continuación se muestran las tablas que se cargan de las diferentes hojas del excel.|"),
         uiOutput("dropdown_sheets"),
         dataTableOutput("table_data")
@@ -313,7 +313,7 @@ ui <- dashboardPage (
           )),
         fluidRow(
           column(width = 6,
-                 uiOutput("dropdowns_¨piccap"),
+                 uiOutput("dropdowns_piccap"),
                  actionButton("update_plot_piccap", "Actualizar Gráfico")
           ),
           box(title = "Cartas control", background = "green",
@@ -730,7 +730,7 @@ server <- function(input, output, session) {
     req(data())
     dropdowns <- lapply(c("Prueba", "Técnica", "Proveedor"), function(col) {
       unique_values <- sort(unique(data_onac()[[col]]))
-      selectInput(inputId = paste0("dropdown_", col), label = col, choices = c("", unique_values))
+      selectInput(inputId = paste0("dropdown_onac_", col), label = col, choices = c("", unique_values))
     })
     tagList(
       tags$style(HTML("
@@ -748,17 +748,17 @@ server <- function(input, output, session) {
   filtered_data_onac <- reactive({
     req(data_onac())
     data_onac() %>%
-      filter(Prueba == input$dropdown_Prueba,
-             Tecnica == input$dropdown_Técnica,
-             Proveedor == input$dropdown_Proveedor)
+      filter(Prueba == input$dropdown_onac_Prueba,
+             Técnica == input$dropdown_onac_Técnica,
+             Proveedor == input$dropdown_onac_Proveedor)
   })
   
   output$zscore_plot_onac <- renderPlot({
-    req(input$update_plot)
+    req(input$update_plot_onac)
     all_data <- data_onac() %>%
-      filter(Prueba == input$dropdown_Prueba,
-             Tecnica == input$dropdown_Técnica,
-             Proveedor == input$dropdown_Proveedor)
+      filter(Prueba == input$dropdown_onac_Prueba,
+             Técnica == input$dropdown_onac_Técnica,
+             Proveedor == input$dropdown_onac_Proveedor)
     
     all_data$`z Score` <- as.numeric(all_data$`z Score`)
     
@@ -782,11 +782,11 @@ server <- function(input, output, session) {
   })
   
   output$zscore_plot_all_onac <- renderPlot({
-    req(input$update_plot)
+    req(input$update_plot_onac)
     all_data <- data_onac() %>%
-      filter(Prueba == input$dropdown_Prueba,
-             Tecnica == input$dropdown_Técnica,
-             Proveedor == input$dropdown_Proveedor)
+      filter(Prueba == input$dropdown_onac_Prueba,
+             Técnica == input$dropdown_onac_Técnica,
+             Proveedor == input$dropdown_onac_Proveedor)
     
     # Convertir la columna z Score a numérica
     all_data$`z Score` <- as.numeric(all_data$`z Score`)
@@ -824,8 +824,8 @@ server <- function(input, output, session) {
   
   # Filtrar datos según selecciones
   filtered_data_indicadores_onac <- reactive({
-    req(data())
-    data() %>%
+    req(data_onac())
+    data_onac() %>%
       filter(Prueba == input$dropdown_indicadores_Prueba,
              Técnica == input$dropdown_indicadores_Técnica)
   })
@@ -986,7 +986,7 @@ server <- function(input, output, session) {
   
   
   
-  # ONAC- CARTAS CONTROL  
+  # PICCAP- CARTAS CONTROL  
   #------------------------------------------------------------#
   output$dropdowns_piccap <- renderUI({
     req(data_piccap())
@@ -1038,36 +1038,9 @@ server <- function(input, output, session) {
       geom_point(data = all_data[all_data$`z Score` < -2 | all_data$`z Score` > 2, ], aes(shape = "Outside Limits"), size = 4) +
       scale_shape_manual(values = c("Outside Limits" = 1))  # Cambiar la forma de los puntos fuera de los límites
   })
+
   
-  output$zscore_plot_all_piccap <- renderPlot({
-    req(input$update_plot_piccap)
-    all_data <- data_piccap() %>%
-      filter(Prueba == input$dropdown_Prueba)
-    
-    # Convertir la columna z Score a numérica
-    all_data$`z Score` <- as.numeric(all_data$`z Score`)
-    
-    # Calcular los límites del eje Y basados en los datos
-    y_limits <- range(all_data$`z Score`, na.rm = TRUE)
-    
-    ggplot(all_data, aes(x = Fecha_del_informe, y = `z Score`, color = `Proveedor`, group = `Proveedor`)) +
-      geom_point(size = 3) +  # Tamaño de los puntos
-      geom_smooth(method = "loess", se = FALSE) +  # Suavizado de dispersión
-      geom_hline(yintercept = c(-2, 2), linetype = "solid", color = "red") +
-      labs(title = "Z-Scores de Todos los Proveedores", x = "Fecha del Informe", y = "Z-Score") +  # Etiquetas de los ejes
-      theme_minimal() +  # Estilo minimalista
-      theme(
-        plot.background = element_rect(fill = "#F0F8FF"),  
-        panel.background = element_rect(fill = "#D3E3D3"),  
-        text = element_text(color = "black", size = 10, face = "bold"),  
-        plot.title = element_text(hjust = 0.5),  
-        axis.title = element_text(hjust = 0.5)  
-      ) +
-      geom_point(data = all_data[all_data$`z Score` < -2 | all_data$`z Score` > 2, ], aes(shape = "Outside Limits"), size = 4) +
-      scale_shape_manual(values = c("Outside Limits" = 1))  # Cambiar la forma de los puntos fuera de los límites
-  })
-  
-  # ONAC - INDICADORES
+  # PICCAP - INDICADORES
   # -----------------------------------------------------------#
   output$dropdown_indicadores_piccap <- renderUI({
     req(data_piccap())
@@ -1080,8 +1053,8 @@ server <- function(input, output, session) {
   
   # Filtrar datos según selecciones
   filtered_data_indicadores_piccap <- reactive({
-    req(data())
-    data() %>%
+    req(data_piccap())
+    data_piccap() %>%
       filter(Prueba == input$dropdown_indicadores_Prueba)
   })
   
